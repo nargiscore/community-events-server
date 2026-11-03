@@ -6,7 +6,19 @@ import joinsRouter from "./routes/joins.js";
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+// app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+// CLIENT_URL may hold one or more comma-separated URLs; clean stray spaces, labels and slashes.
+const allowedOrigins = (process.env.CLIENT_URL || "")
+  .split(/[\s,]+/)
+  .map((s) => s.replace(/\/+$/, ""))
+  .filter((s) => s.startsWith("http"));
+
+app.use(
+  cors({
+    origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.get("/", (_req, res) => res.json({ status: "ok", service: "Community Events API" }));
